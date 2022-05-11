@@ -263,8 +263,12 @@ let rec compileExp  (e      : TypedExp)
      version, but remember to come back and clean it up later.
      `Not` and `Negate` are simpler; you can use `Mips.XORI` for `Not`
   *)
-  | Times (_, _, _) ->
-      failwith "Unimplemented code generation of multiplication"
+  | Times (e1, e2, pos) ->
+      let t1 = newReg "times_L"
+      let t2 = newReg "times_R"
+      let code1 = compileExp e1 vtable t1
+      let code2 = compileExp e2 vtable t2
+      code1 @ code2 @ [Mips.MUL (place,t1,t2)]
 
   | Divide (_, _, _) ->
       failwith "Unimplemented code generation of division"

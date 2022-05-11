@@ -1,0 +1,9 @@
+.DS_Store
+fasto/.DS_Store
+fasto/Fasto/Lexer.fs
+fasto/Fasto/Parser.fs
+fasto/Fasto/Parser.fsi
+fasto/Fasto/Parser.fsyacc.output
+fasto/Fasto/bin/
+fasto/Fasto/obj/
+fasto/test.fo
