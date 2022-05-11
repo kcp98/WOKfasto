@@ -151,8 +151,14 @@ let rec evalExp (e : UntypedExp, vtab : VarTable, ftab : FunTable) : Value =
           | (IntVal n1, IntVal n2) -> IntVal (n1*n2)
           | (IntVal _, _) -> reportWrongType "right operand of -" Int res2 (expPos e2)
           | (_, _) -> reportWrongType "left operand of -" Int res1 (expPos e1)
-  | Divide(_, _, _) ->
-        failwith "Unimplemented interpretation of division"
+  | Divide(e1, e2, pos) ->
+        let res1   = evalExp(e1, vtab, ftab)
+        let res2   = evalExp(e2, vtab, ftab)
+        match (res1, res2) with
+          | (IntVal n1, IntVal n2) when n2 = 0 -> raise(MyError("Division by 0", pos))
+          | (IntVal n1, IntVal n2) -> IntVal (n1/n2)
+          | (IntVal _, _) -> reportWrongType "right operand of -" Int res2 (expPos e2)
+          | (_, _) -> reportWrongType "left operand of -" Int res1 (expPos e1)
   | And (_, _, _) ->
         failwith "Unimplemented interpretation of &&"
   | Or (_, _, _) ->
