@@ -137,14 +137,17 @@ and checkExp  (ftab : FunTable)
         let (e1_dec, e2_dec) = checkBinOp ftab vtab (pos, Int, e1, e2)
         (Int, Divide (e1_dec, e2_dec, pos))
 
-    | And (_, _, _) ->
-        failwith "Unimplemented type check of &&"
+    | And (e1, e2, pos) ->
+        let (e1_dec, e2_dec) = checkBinOp ftab vtab (pos, Bool, e1, e2)
+        (Bool, And (e1_dec, e2_dec, pos))
 
-    | Or (_, _, _) ->
-        failwith "Unimplemented type check of ||"
+    | Or (e1, e2, pos) ->
+        let (e1_dec, e2_dec) = checkBinOp ftab vtab (pos, Bool, e1, e2)
+        (Bool, Or (e1_dec, e2_dec, pos))
 
-    | Not (_, _) ->
-        failwith "Unimplemented type check of not"
+    | Not (e1, pos) ->
+        let (e1_dec, _) = checkBinOp ftab vtab (pos, Bool, e1, e1)
+        (Bool, Not (e1_dec, pos))
 
     | Negate (_, _) ->
         failwith "Unimplemented type check of negate"

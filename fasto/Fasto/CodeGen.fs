@@ -195,7 +195,8 @@ let rec compileExp  (e      : TypedExp)
         ; Mips.ORI (place, place, n % 65536) ]
   | Constant (BoolVal p, _) ->
       (* TODO project task 1: represent `true`/`false` values as `1`/`0` *)
-      failwith "Unimplemented code generation of boolean constants"
+      if p then [ Mips.LI (place, 1) ]
+      else [ Mips.LI (place, 0) ]
   | Constant (CharVal c, pos) -> [ Mips.LI (place, int c) ]
 
   (* Create/return a label here, collect all string literals of the program
@@ -280,8 +281,10 @@ let rec compileExp  (e      : TypedExp)
       let code2 = compileExp e2 vtable t2
       code1 @ code2 @ [Mips.DIV (place,t1,t2)]
 
-  | Not (_, _) ->
-      failwith "Unimplemented code generation of not"
+  | Not (e1, pos) ->
+      let t1 = newReg "not_L"
+      let code1 = compileExp e1 vtable t1
+      [Mips.XORI (place,t1, 1)]
 
   | Negate (_, _) ->
       failwith "Unimplemented code generation of negate"
@@ -400,11 +403,40 @@ let rec compileExp  (e      : TypedExp)
         in `e1 || e2` if the execution of `e1` will evaluate to `true` then
         the code of `e2` must not be executed. Similarly for `And` (&&).
   *)
-  | And (_, _, _) ->
-      failwith "Unimplemented code generation of &&"
+  | And (e1, e2, pos) ->
+      let t1 = newReg "and_L"
+      let t2 = newReg "and_R"
+      let code1 = compileExp e1 vtable t1
+      let code2 = compileExp e2 vtable t2
+      let falseLabel = newLab "false"
+      let t3 = newReg "and_I"
+      code1 @
+       [ Mips.LI (place, 0)
+       ; Mips.ORI (t3, t1, 1)
+       ; Mips.BNE (t1,t3,falseLabel)
+       ] @ code2 @ 
+       [ Mips.BNE (t2,t3,falseLabel)
+       ; Mips.LI (place, 1)
+       ; Mips.LABEL falseLabel
+       ]
 
-  | Or (_, _, _) ->
-      failwith "Unimplemented code generation of ||"
+  | Or (e1, e2, pos) ->
+      // TODO make it like And :)))
+      let t1 = newReg "or_L"
+      let t2 = newReg "or_R"
+      let code1 = compileExp e1 vtable t1
+      let code2 = compileExp e2 vtable t2
+      let trueLabel = newLab "true"
+      let t3 = newReg "or_I"
+      code1 @
+       [ Mips.LI (place, 1)
+       ; Mips.ORI (t3, t1, 1)
+       ; Mips.BEQ (t1,t3,trueLabel)
+       ] @ code2 @ 
+       [ Mips.BEQ (t2,t3,trueLabel)
+       ; Mips.LI (place, 0)
+       ; Mips.LABEL trueLabel
+       ]
 
   (* Indexing:
      1. generate code to compute the index
