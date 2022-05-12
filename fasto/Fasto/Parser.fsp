@@ -17,6 +17,16 @@ let parse_error_rich =
       | Some token -> sprintf "at token %A\n" token
   )
 
+(* Produce multi variable let expressions *)
+let rec mvl (decs : List<Dec<'T>>)
+            (exp  : Exp<'T>)
+            (pos  : Position)
+            : Exp<'T> =
+      match decs with
+      |        []      -> exp
+      | dec :: []      -> Let (dec, exp, pos)
+      | dec :: remdecs -> Let (dec, (mvl remdecs exp pos), pos)
+
 %}
 
 //////////////////////////////////////////////////////////////////////
@@ -156,15 +166,19 @@ Exp : NUM            { Constant (IntVal (fst $1), snd $1) }
     | REDUCE LPAR OP BinOp COMMA Exp COMMA Exp RPAR
                      { Reduce ($4, $6, $8, (), $1) }
     | LPAR Exp RPAR  { $2 }
-    // TODO: task 1(b): replace this with a more general production
-    | LET ID EQ Exp IN Exp %prec letprec
-                     { Let (Dec (fst $2, $4, $3), $6, $1) }
+    
+    | LET Decs IN Exp %prec letprec
+                     { mvl $2 $4 $1 }
     | ID LBRACKET Exp RBRACKET
                      { Index (fst $1, $3, (), $2) }
 ;
 
 Exps : Exp COMMA Exps { $1 :: $3 }
      | Exp            { $1 :: [] }
+;
+
+Decs : ID EQ Exp SEMICOLON Decs { Dec (fst $1, $3, $2) :: $5 }
+     | ID EQ Exp { Dec (fst $1, $3, $2) :: [] }
 ;
 
 FunArg : ID    { FunName (fst $1 ) }
