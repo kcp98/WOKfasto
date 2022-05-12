@@ -257,19 +257,12 @@ let rec compileExp  (e      : TypedExp)
       let code2 = compileExp e2 vtable t2
       code1 @ code2 @ [Mips.SUB (place,t1,t2)]
 
-  (* TODO project task 1:
-     Look in `AbSyn.fs` for the expression constructors `Times`, ...
-     `Times` is very similar to `Plus`/`Minus`.
-     For `Divide`, you may ignore division by zero for a quick first
-     version, but remember to come back and clean it up later.
-     `Not` and `Negate` are simpler; you can use `Mips.XORI` for `Not`
-  *)
   | Times (e1, e2, pos) ->
       let t1 = newReg "times_L"
       let t2 = newReg "times_R"
       let code1 = compileExp e1 vtable t1
       let code2 = compileExp e2 vtable t2
-      code1 @ code2 @ [Mips.MUL (place,t1,t2)]
+      code1 @ code2 @ [ Mips.MUL (place, t1, t2) ]
 
   | Divide (e1, e2, pos) ->
     match e2 with
@@ -279,21 +272,20 @@ let rec compileExp  (e      : TypedExp)
       let t2 = newReg "divide_R"
       let code1 = compileExp e1 vtable t1
       let code2 = compileExp e2 vtable t2
-      code1 @ code2 @ [Mips.DIV (place,t1,t2)]
+      code1 @ code2 @ [ Mips.DIV (place, t1, t2) ]
 
-  | Not (e1, pos) ->
-      let t1 = newReg "not_L"
-      let code1 = compileExp e1 vtable t1
-      [Mips.XORI (place,t1, 1)]
+  | Not (e, pos) ->
+      let t = newReg "not"
+      let code = compileExp e vtable t
+      code @ [ Mips.XORI (place, t, 1) ]
 
-  | Negate (e1, pos) ->
-      let t1 = newReg "negate"
-      let t2 = newReg "ph"
-      let code1 = compileExp e1 vtable t1
-      code1 @
-      [ Mips.SUB (t2, t1, t1)
-      ; Mips.SUB (place, t2, t1)
-      ]
+  | Negate (e, pos) ->
+      let t = newReg "negate"
+      let n = newReg "negated"
+      let code = compileExp e vtable t
+      code @ [ Mips.SUB (n, t, t)
+             ; Mips.SUB (place, n, t)
+             ]
 
   | Let (dec, e1, pos) ->
       let (code1, vtable1) = compileDec dec vtable
@@ -402,47 +394,37 @@ let rec compileExp  (e      : TypedExp)
       let code2 = compileExp e2 vtable t2
       code1 @ code2 @ [Mips.SLT (place,t1,t2)]
 
-  (* TODO project task 1:
-        Look in `AbSyn.fs` for the expression constructors of `And` and `Or`.
-        The implementation of `And` and `Or` is more complicated than `Plus`
-        because you need to ensure the short-circuit semantics, e.g.,
-        in `e1 || e2` if the execution of `e1` will evaluate to `true` then
-        the code of `e2` must not be executed. Similarly for `And` (&&).
-  *)
   | And (e1, e2, pos) ->
       let t1 = newReg "and_L"
       let t2 = newReg "and_R"
       let code1 = compileExp e1 vtable t1
       let code2 = compileExp e2 vtable t2
-      let falseLabel = newLab "false"
-      let t3 = newReg "and_I"
-      code1 @
-       [ Mips.LI (place, 0)
-       ; Mips.ORI (t3, t1, 1)
-       ; Mips.BNE (t1,t3,falseLabel)
-       ] @ code2 @ 
-       [ Mips.BNE (t2,t3,falseLabel)
-       ; Mips.LI (place, 1)
-       ; Mips.LABEL falseLabel
-       ]
+      let ret = newLab "return"
+      let t   = newReg "true"
+      code1 @ [ Mips.LI  (place,  0)
+              ; Mips.ORI (t, t1,  1)
+              ; Mips.BNE (t1, t, ret)
+              ] @
+      code2 @ [ Mips.BNE (t2, t, ret)
+              ; Mips.LI  (place,  1)
+              ; Mips.LABEL ret
+              ]
 
   | Or (e1, e2, pos) ->
-      // TODO make it like And :)))
       let t1 = newReg "or_L"
       let t2 = newReg "or_R"
       let code1 = compileExp e1 vtable t1
       let code2 = compileExp e2 vtable t2
-      let trueLabel = newLab "true"
-      let t3 = newReg "or_I"
-      code1 @
-       [ Mips.LI (place, 1)
-       ; Mips.ORI (t3, t1, 1)
-       ; Mips.BEQ (t1,t3,trueLabel)
-       ] @ code2 @ 
-       [ Mips.BEQ (t2,t3,trueLabel)
-       ; Mips.LI (place, 0)
-       ; Mips.LABEL trueLabel
-       ]
+      let ret = newLab "return"
+      let t   = newReg "true"
+      code1 @ [ Mips.LI  (place, 1)
+              ; Mips.ORI (t, t1, 1)
+              ; Mips.BEQ (t1, t, ret)
+              ] @
+      code2 @ [ Mips.BEQ (t2, t, ret)
+              ; Mips.LI  (place, 0)
+              ; Mips.LABEL ret
+              ]
 
   (* Indexing:
      1. generate code to compute the index

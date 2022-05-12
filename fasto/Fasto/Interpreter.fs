@@ -134,16 +134,7 @@ let rec evalExp (e : UntypedExp, vtab : VarTable, ftab : FunTable) : Value =
           | (IntVal n1, IntVal n2) -> IntVal (n1-n2)
           | (IntVal _, _) -> reportWrongType "right operand of -" Int res2 (expPos e2)
           | (_, _) -> reportWrongType "left operand of -" Int res1 (expPos e1)
-  (* TODO: project task 1:
-     Look in `AbSyn.fs` for the arguments of the `Times`
-     (`Divide`,...) expression constructors.
-        Implementation similar to the cases of Plus/Minus.
-        Try to pattern match the code above.
-        For `Divide`, remember to check for attempts to divide by zero.
-        For `And`/`Or`: make sure to implement the short-circuit semantics,
-        e.g., `And (e1, e2, pos)` should not evaluate `e2` if `e1` already
-              evaluates to false.
-  *)
+
   | Times(e1, e2, pos) ->
         let res1   = evalExp(e1, vtab, ftab)
         let res2   = evalExp(e2, vtab, ftab)
@@ -151,7 +142,8 @@ let rec evalExp (e : UntypedExp, vtab : VarTable, ftab : FunTable) : Value =
           | (IntVal n1, IntVal n2) -> IntVal (n1*n2)
           | (IntVal _, _) -> reportWrongType "right operand of *" Int res2 (expPos e2)
           | (_, _) -> reportWrongType "left operand of *" Int res1 (expPos e1)
-  | Divide(e1, e2, pos) ->
+
+  | Divide(e1, e2, pos) -> (* Should throw division by 0 *)
         let res1   = evalExp(e1, vtab, ftab)
         let res2   = evalExp(e2, vtab, ftab)
         match (res1, res2) with
@@ -159,36 +151,41 @@ let rec evalExp (e : UntypedExp, vtab : VarTable, ftab : FunTable) : Value =
           | (IntVal n1, IntVal n2) -> IntVal (n1/n2)
           | (IntVal _, _) -> reportWrongType "right operand of /" Int res2 (expPos e2)
           | (_, _) -> reportWrongType "left operand of /" Int res1 (expPos e1)
-  | And (e1, e2, pos) ->
-        let res1 = evalExp(e1, vtab, ftab) 
+  
+  | And(e1, e2, pos) ->
+        let res1   = evalExp(e1, vtab, ftab)
         match res1 with
-          | BoolVal n1 when n1 -> 
+          | BoolVal n1 when not n1 -> BoolVal (n1)
+          | BoolVal n1 ->
             let res2 = evalExp(e2, vtab, ftab) 
             match res2 with
-              | BoolVal n2 -> BoolVal (n1 && n2)
+              | BoolVal n2 -> BoolVal (n2)
               | _ -> reportWrongType "right operand of &&" Bool res2 (expPos e2)
-          | BoolVal n1 -> BoolVal (n1)
           | _ -> reportWrongType  "left operand of &&" Bool res1 (expPos e1)
-  | Or (e1, e2, pos) ->
-        let res1 = evalExp(e1, vtab, ftab) 
+
+  | Or(e1, e2, pos) ->
+        let res1   = evalExp(e1, vtab, ftab) 
         match res1 with
-          | BoolVal n1 when not n1 -> 
-            let res2 = evalExp(e2, vtab, ftab) 
+          | BoolVal n1 when n1 -> BoolVal (n1)
+          | BoolVal n1 ->
+            let res2 = evalExp(e2, vtab, ftab)
             match res2 with
-              | BoolVal n2 -> BoolVal (n1 || n2)
+              | BoolVal n2 -> BoolVal (n2)
               | _ -> reportWrongType "right operand of ||" Bool res2 (expPos e2)
-          | BoolVal n1 -> BoolVal (n1)
           | _ -> reportWrongType  "left operand of ||" Bool res1 (expPos e1)
-  | Not(e1, pos) ->
-        let res1 = evalExp(e1, vtab, ftab)
-        match (res1) with
-          | (BoolVal n1) -> BoolVal (not n1)
-          | _ -> reportWrongType "operand of not" Bool res1 (expPos e1)
-  | Negate(e1, pos) ->
-        let res1 = evalExp(e1, vtab, ftab)
-        match (res1) with
-          | (IntVal n1) -> IntVal (-n1)
-          | _ -> reportWrongType "operand of negation" Int res1 (expPos e1)
+
+  | Not(e, pos) ->
+        let res    = evalExp(e, vtab, ftab)
+        match (res) with
+          | (BoolVal n) -> BoolVal (not n)
+          | _ -> reportWrongType "operand of not" Bool res (expPos e)
+
+  | Negate(e, pos) ->
+        let res    = evalExp(e, vtab, ftab)
+        match (res) with
+          | (IntVal n) -> IntVal (-n)
+          | _ -> reportWrongType "operand of negation" Int res (expPos e)
+
   | Equal(e1, e2, pos) ->
         let r1 = evalExp(e1, vtab, ftab)
         let r2 = evalExp(e2, vtab, ftab)

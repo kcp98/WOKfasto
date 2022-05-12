@@ -125,10 +125,6 @@ and checkExp  (ftab : FunTable)
         let (e1_dec, e2_dec) = checkBinOp ftab vtab (pos, Int, e1, e2)
         (Int, Minus (e1_dec, e2_dec, pos))
 
-    (* TODO project task 1:
-        Implement by pattern matching Plus/Minus above.
-        See `AbSyn.fs` for the expression constructors of `Times`, ...
-    *)
     | Times (e1, e2, pos) ->
         let (e1_dec, e2_dec) = checkBinOp ftab vtab (pos, Int, e1, e2)
         (Int, Times (e1_dec, e2_dec, pos))
