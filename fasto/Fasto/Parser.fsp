@@ -94,6 +94,24 @@ BinOp : PLUS  { (Lambda
                         Plus (Var ("x", $1),
                               Var ("y", $1),
                                         $1) ,$1))}
+      | MINUS { (Lambda
+                       (Int, [Param ("x", Int);
+                              Param ("y", Int)],
+                        Minus (Var ("x", $1),
+                              Var ("y", $1),
+                                        $1) ,$1))}
+      | TIMES { (Lambda
+                       (Int, [Param ("x", Int);
+                              Param ("y", Int)],
+                        Times (Var ("x", $1),
+                              Var ("y", $1),
+                                        $1) ,$1))}
+      | DIVIDE { (Lambda
+                       (Int, [Param ("x", Int);
+                              Param ("y", Int)],
+                        Divide (Var ("x", $1),
+                              Var ("y", $1),
+                                        $1) ,$1))}
 ;
 
 ///////////////////////////////////////////////////////
@@ -115,6 +133,7 @@ Exp : NUM            { Constant (IntVal (fst $1), snd $1) }
 
     | Exp PLUS  Exp  { Plus ($1, $3, $2) }
     | Exp MINUS Exp  { Minus($1, $3, $2) }
+    | MINUS Exp      { Negate($2, $1) }
     | Exp TIMES Exp  { Times($1, $3, $2) }
     | Exp DIVIDE Exp { Divide($1,$3, $2) }
     | Exp DEQ   Exp  { Equal($1, $3, $2) }

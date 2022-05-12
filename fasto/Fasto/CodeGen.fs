@@ -286,8 +286,14 @@ let rec compileExp  (e      : TypedExp)
       let code1 = compileExp e1 vtable t1
       [Mips.XORI (place,t1, 1)]
 
-  | Negate (_, _) ->
-      failwith "Unimplemented code generation of negate"
+  | Negate (e1, pos) ->
+      let t1 = newReg "negate"
+      let t2 = newReg "ph"
+      let code1 = compileExp e1 vtable t1
+      code1 @
+      [ Mips.SUB (t2, t1, t1)
+      ; Mips.SUB (place, t2, t1)
+      ]
 
   | Let (dec, e1, pos) ->
       let (code1, vtable1) = compileDec dec vtable
