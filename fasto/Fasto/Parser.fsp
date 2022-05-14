@@ -61,8 +61,7 @@ let rec mvl (decs : List<Dec<'T>>)
 %left AND OR
 %left DEQ LTH NOT
 %left PLUS MINUS
-%left TIMES DIVIDE
-%left NEGATE
+%left TIMES DIVIDE NEGATE
 
 %start Prog
 %type <AbSyn.UntypedProg> Prog

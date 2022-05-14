@@ -141,13 +141,13 @@ and checkExp  (ftab : FunTable)
         let (e1_dec, e2_dec) = checkBinOp ftab vtab (pos, Bool, e1, e2)
         (Bool, Or (e1_dec, e2_dec, pos))
 
-    | Not (e1, pos) ->
-        let (e1_dec, _) = checkBinOp ftab vtab (pos, Bool, e1, e1)
-        (Bool, Not (e1_dec, pos))
+    | Not (e, pos) ->
+        let (e_dec, _) = checkBinOp ftab vtab (pos, Bool, e, e)
+        (Bool, Not (e_dec, pos))
 
-    | Negate (e1, pos) ->
-        let (e1_dec, _) = checkBinOp ftab vtab (pos, Int, e1, e1)
-        (Int, Negate (e1_dec, pos))
+    | Negate (e, pos) ->
+        let (e_dec, _) = checkBinOp ftab vtab (pos, Int, e, e)
+        (Int, Negate (e_dec, pos))
 
     (* The types for e1, e2 must be the same. The result is always a Bool. *)
     | Equal (e1, e2, pos) ->

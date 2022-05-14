@@ -265,14 +265,21 @@ let rec compileExp  (e      : TypedExp)
       code1 @ code2 @ [ Mips.MUL (place, t1, t2) ]
 
   | Divide (e1, e2, pos) ->
-    match e2 with
-    | Constant (IntVal n, pos) when n = 0 -> raise (MyError("Division by zero", pos))
-    | _ ->
       let t1 = newReg "divide_L"
       let t2 = newReg "divide_R"
       let code1 = compileExp e1 vtable t1
       let code2 = compileExp e2 vtable t2
-      code1 @ code2 @ [ Mips.DIV (place, t1, t2) ]
+      let nz = newLab "nonzero"
+      let z  = newReg "zero"
+      code1 @ code2 @ 
+      [ Mips.LI (z,  0)
+      ; Mips.BNE (t2, z, nz)
+      ; Mips.LI(RN5, fst pos)
+      ; Mips.LA(RN6, "_Msg_DivZero_")
+      ; Mips.J "_RuntimeError_"
+      ; Mips.LABEL nz
+      ; Mips.DIV (place, t1, t2)
+      ]
 
   | Not (e, pos) ->
       let t = newReg "not"
