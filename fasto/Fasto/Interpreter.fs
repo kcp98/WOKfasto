@@ -278,8 +278,15 @@ let rec evalExp (e : UntypedExp, vtab : VarTable, ftab : FunTable) : Value =
          the value of `a`; otherwise raise an error (containing
          a meaningful message).
   *)
-  | Replicate (_, _, _, _) ->
-        failwith "Unimplemented interpretation of replicate"
+  | Replicate (count, initial, _, pos) ->
+      match evalExp(count, vtab, ftab) with
+      | IntVal n when n >= 0 ->
+          let i = evalExp(initial, vtab, ftab)
+          ArrayVal (List.replicate n i, valueType i)
+      | IntVal n ->
+          let msg = sprintf "Argument of \"replicate\" is negative: %i" n
+          raise (MyError(msg, pos))
+      | otherwise -> reportWrongType "1st argument of \"replicate\"" Int otherwise pos
 
   (* TODO project task 2: `filter(p, arr)`
        pattern match the implementation of map:
@@ -289,15 +296,29 @@ let rec evalExp (e : UntypedExp, vtab : VarTable, ftab : FunTable) : Value =
          under predicate `p`, i.e., `p(a) = true`;
        - create an `ArrayVal` from the (list) result of the previous step.
   *)
-  | Filter (_, _, _, _) ->
-        failwith "Unimplemented interpretation of filter"
+  | Filter (farg, arrexp, _, pos) ->
+      if rtpFunArg farg ftab pos <> Bool then
+        raise (MyError("1st argument of \"filter\" must retun bool", pos))
+      match evalExp(arrexp, vtab, ftab) with
+      | ArrayVal (lst, tp1) ->
+          let flst = List.filter (
+            fun x -> evalFunArg (farg, vtab, ftab, pos, [x]) = BoolVal true) lst
+          ArrayVal (flst, tp1)
+      | otherwise -> reportNonArray "2nd argument of \"filter\"" otherwise pos
 
   (* TODO project task 2: `scan(f, ne, arr)`
      Implementation similar to reduce, except that it produces an array
      of the same type and length to the input array `arr`.
   *)
-  | Scan (_, _, _, _, _) ->
-        failwith "Unimplemented interpretation of scan"
+  | Scan (farg, ne, arrexp, _, pos) ->
+      match evalExp(arrexp, vtab, ftab) with
+      | ArrayVal (lst, tp1) ->
+          let mutable acc = evalExp(ne, vtab, ftab)
+          let slst = [
+            for x in lst ->
+              acc <- evalFunArg (farg, vtab, ftab, pos, [x; acc]); acc]
+          ArrayVal (slst, tp1)
+      | otherwise -> reportNonArray "3rd argument of \"scan\"" otherwise pos
 
   | Read (t,p) ->
         let str = Console.ReadLine()
