@@ -746,6 +746,7 @@ let rec compileExp  (e      : TypedExp)
                        
                        ; Mips.J loop_beg
                        ; Mips.LABEL loop_end
+                       ; Mips.SW(j_reg, place, 0)
                        ]
       arr_code
        @ get_size
