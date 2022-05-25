@@ -155,22 +155,22 @@ let rec evalExp (e : UntypedExp, vtab : VarTable, ftab : FunTable) : Value =
   | And(e1, e2, pos) ->
         let res1   = evalExp(e1, vtab, ftab)
         match res1 with
-          | BoolVal n1 when not n1 -> BoolVal (n1)
-          | BoolVal n1 ->
+          | BoolVal b1 when not b1 -> BoolVal (b1)
+          | BoolVal b1 ->
             let res2 = evalExp(e2, vtab, ftab) 
             match res2 with
-              | BoolVal n2 -> BoolVal (n2)
+              | BoolVal b2 -> BoolVal (b2)
               | _ -> reportWrongType "right operand of &&" Bool res2 (expPos e2)
           | _ -> reportWrongType  "left operand of &&" Bool res1 (expPos e1)
 
   | Or(e1, e2, pos) ->
         let res1   = evalExp(e1, vtab, ftab) 
         match res1 with
-          | BoolVal n1 when n1 -> BoolVal (n1)
-          | BoolVal n1 ->
+          | BoolVal b1 when b1 -> BoolVal (b1)
+          | BoolVal b1 ->
             let res2 = evalExp(e2, vtab, ftab)
             match res2 with
-              | BoolVal n2 -> BoolVal (n2)
+              | BoolVal b2 -> BoolVal (b2)
               | _ -> reportWrongType "right operand of ||" Bool res2 (expPos e2)
           | _ -> reportWrongType  "left operand of ||" Bool res1 (expPos e1)
 

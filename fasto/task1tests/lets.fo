@@ -1,0 +1,4 @@
+fun bool main() =
+  let a = (let x = 3 in let y = 2*x in let z = iota(y+4) in z[y]) in
+  let b = (let x = 3; y = 2*x; z = iota(y+4) in z[y]) in
+  write(a == b)

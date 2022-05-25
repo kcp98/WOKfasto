@@ -1,0 +1,16 @@
+fun int negation(int a, int b, int c) =
+  let x = ~a + b * c == b * c - a
+    ; y = ( ( (~a) + (b*c) ) == ( (b * c) - a) ) in
+  let z = if x == y then 1 else 0 in
+  write(z)
+
+fun int precedence(int a, int b, int c) =
+  let x = a / b + 4 * ~a / a * c - b / a
+    ; y = (( (a / b) + (((4 * (0 - a)) / a) * c)) - (b / a)) in
+  let z = if x == y then 1 else 0 in
+  write(z)
+
+fun int main() =
+  let n0 =   negation(2, 6, 4 - 5) in
+  let p0 = precedence(2, 6, 4 - 5) in
+  1

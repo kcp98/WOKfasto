@@ -142,11 +142,15 @@ and checkExp  (ftab : FunTable)
         (Bool, Or (e1_dec, e2_dec, pos))
 
     | Not (e, pos) ->
-        let (e_dec, _) = checkBinOp ftab vtab (pos, Bool, e, e)
+        let (t, e_dec) = checkExp ftab vtab e
+        if t <> Bool then
+          reportTypeWrong "argument of unary operator" Bool t pos
         (Bool, Not (e_dec, pos))
 
     | Negate (e, pos) ->
-        let (e_dec, _) = checkBinOp ftab vtab (pos, Int, e, e)
+        let (t, e_dec) = checkExp ftab vtab e
+        if t <> Int then
+          reportTypeWrong "argument of unary operator" Int t pos
         (Int, Negate (e_dec, pos))
 
     (* The types for e1, e2 must be the same. The result is always a Bool. *)

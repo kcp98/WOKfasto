@@ -1,0 +1,15 @@
+fun int tobe(bool to, bool be) =
+  let a = (  not to == be  ||     not to  &&  be == not true)
+    ; b = ( ((not to) == be) || ((not to) && (be == (not true)))) in
+  
+  if a == b then write(1)
+  else  write(0)
+
+fun int main() =
+  let tt = tobe(true,   true) in
+  let tf = tobe(true,  false) in
+  let ft = tobe(false,  true) in
+  let ff = tobe(false, false) in
+  1
+
+

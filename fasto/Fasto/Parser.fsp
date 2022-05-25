@@ -50,7 +50,7 @@ let parse_error_rich =
 %token <Position> REPLICATE FILTER SCAN
 
 %nonassoc ifprec letprec
-%left AND OR
+%right AND OR
 %left DEQ LTH NOT
 %left PLUS MINUS
 %left TIMES DIVIDE NEGATE
