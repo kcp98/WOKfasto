@@ -50,10 +50,13 @@ let parse_error_rich =
 %token <Position> REPLICATE FILTER SCAN
 
 %nonassoc ifprec letprec
-%right AND OR
-%left DEQ LTH NOT
+%left OR
+%left AND
+%left DEQ LTH
+%nonassoc NOT
 %left PLUS MINUS
-%left TIMES DIVIDE NEGATE
+%left TIMES DIVIDE
+%nonassoc NEGATE
 
 %start Prog
 %type <AbSyn.UntypedProg> Prog

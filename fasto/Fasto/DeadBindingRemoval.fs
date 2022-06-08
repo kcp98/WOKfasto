@@ -68,7 +68,7 @@ let rec removeDeadBindingsInExp (e : TypedExp) : (bool * DBRtab * TypedExp) =
                         you need to record it in a new symbol table.
                   - 3rd element of the tuple: should be the optimised expression.
             *)
-            (true, recordUse name (SymTab.empty()), e)
+            (false, recordUse name (SymTab.empty()), e)
         | Plus (x, y, pos) ->
             let (xios, xuses, x') = removeDeadBindingsInExp x
             let (yios, yuses, y') = removeDeadBindingsInExp y
@@ -147,7 +147,7 @@ let rec removeDeadBindingsInExp (e : TypedExp) : (bool * DBRtab * TypedExp) =
             *)
             let (eio, euses,    e') = removeDeadBindingsInExp e
             let (bio, buses, body') = removeDeadBindingsInExp body
-            let dbr = SymTab.combine euses buses
+            let dbr = SymTab.combine euses (SymTab.remove name buses)
             if not (isUsed name buses || eio) then (
                 bio, recordUse name dbr, body'
             ) else (
